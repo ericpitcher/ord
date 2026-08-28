@@ -76,15 +76,47 @@ const Layout = styled.main<{ $font: string }>`
   }
 `
 
-const FontPicker = styled.div`
+const SettingsFieldset = styled.fieldset`
+  width: min(600px, 92vw);
+  box-sizing: border-box;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 24px 20px 20px;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: min(600px, 92vw);
+  gap: 20px;
 
   @media print {
     display: none;
   }
+`
+
+const SettingsLegend = styled.legend`
+  margin-left: 12px;
+  padding: 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+  background: #f4f3ec;
+
+  @media (prefers-color-scheme: dark) {
+    color: #ccc;
+    background: #16171d;
+  }
+`
+
+const SettingsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+`
+
+const FontPicker = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 160px;
 `
 
 const FontLabel = styled.label`
@@ -141,16 +173,12 @@ const CheckboxRow = styled.label`
   display: flex;
   align-items: center;
   gap: 8px;
-  width: min(600px, 92vw);
+  flex: 1 1 160px;
   font-size: 0.95rem;
   color: #333;
 
   @media (prefers-color-scheme: dark) {
     color: #ccc;
-  }
-
-  @media print {
-    display: none;
   }
 `
 
@@ -333,34 +361,57 @@ function App() {
 
   return (
     <Layout $font={font}>
-      <FontPicker>
-        <FontLabel htmlFor="font-select">Typsnitt</FontLabel>
-        <FontSelect
-          id="font-select"
-          value={font}
-          onChange={(event) => setFont(event.target.value)}
-        >
-          {FONT_OPTIONS.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </FontSelect>
-      </FontPicker>
-      <FontPicker>
-        <FontLabel htmlFor="case-select">Skiftläge</FontLabel>
-        <FontSelect
-          id="case-select"
-          value={casing}
-          onChange={(event) => setCasing(event.target.value as CaseMode)}
-        >
-          {CASE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </FontSelect>
-      </FontPicker>
+      <SettingsFieldset>
+        <SettingsLegend>Inställningar</SettingsLegend>
+        <SettingsRow>
+          <FontPicker>
+            <FontLabel htmlFor="font-select">Typsnitt</FontLabel>
+            <FontSelect
+              id="font-select"
+              value={font}
+              onChange={(event) => setFont(event.target.value)}
+            >
+              {FONT_OPTIONS.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </FontSelect>
+          </FontPicker>
+          <FontPicker>
+            <FontLabel htmlFor="case-select">Skiftläge</FontLabel>
+            <FontSelect
+              id="case-select"
+              value={casing}
+              onChange={(event) => setCasing(event.target.value as CaseMode)}
+            >
+              {CASE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </FontSelect>
+          </FontPicker>
+        </SettingsRow>
+        <SettingsRow>
+          <CheckboxRow>
+            <Checkbox
+              type="checkbox"
+              checked={showSentence}
+              onChange={(event) => setShowSentence(event.target.checked)}
+            />
+            Skriv ut meningen längst ner
+          </CheckboxRow>
+          <CheckboxRow>
+            <Checkbox
+              type="checkbox"
+              checked={includePunctuation}
+              onChange={(event) => setIncludePunctuation(event.target.checked)}
+            />
+            Inkludera skiljetecken
+          </CheckboxRow>
+        </SettingsRow>
+      </SettingsFieldset>
       <InputField>
         <InputLabel htmlFor="sentence-input">Skriv en mening</InputLabel>
         <Input
@@ -372,22 +423,6 @@ function App() {
           autoFocus
         />
       </InputField>
-      <CheckboxRow>
-        <Checkbox
-          type="checkbox"
-          checked={showSentence}
-          onChange={(event) => setShowSentence(event.target.checked)}
-        />
-        Skriv ut meningen längst ner
-      </CheckboxRow>
-      <CheckboxRow>
-        <Checkbox
-          type="checkbox"
-          checked={includePunctuation}
-          onChange={(event) => setIncludePunctuation(event.target.checked)}
-        />
-        Inkludera skiljetecken
-      </CheckboxRow>
       <PdfButton
         type="button"
         onClick={handleCreatePdf}
