@@ -240,6 +240,7 @@ const PdfCaptureLayer = styled.div`
 
 const PdfSheet = styled(Sheet)`
   width: 600px;
+  padding: 30px;
 `
 
 function chunk(words: string[], size: number): string[][] {

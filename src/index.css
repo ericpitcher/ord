@@ -10,3 +10,8 @@
 body {
   margin: 0;
 }
+
+@page {
+  size: A4;
+  margin: 0;
+}
