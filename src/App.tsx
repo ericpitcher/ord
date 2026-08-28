@@ -252,7 +252,7 @@ const Grid = styled.div`
 const SentenceFooter = styled.p`
   margin: 0;
   flex: none;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   line-height: 1.4;
   text-align: left;
   color: #333;
