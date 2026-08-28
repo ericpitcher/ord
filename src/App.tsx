@@ -66,10 +66,6 @@ const Layout = styled.main<{ $font: string }>`
   background: #f4f3ec;
   font-family: "${(props) => props.$font}", sans-serif;
 
-  @media (prefers-color-scheme: dark) {
-    background: #16171d;
-  }
-
   @media print {
     background: #fff;
     padding: 0;
@@ -100,11 +96,6 @@ const SettingsLegend = styled.legend`
   font-weight: 600;
   color: #444;
   background: #f4f3ec;
-
-  @media (prefers-color-scheme: dark) {
-    color: #ccc;
-    background: #16171d;
-  }
 `
 
 const SettingsRow = styled.div`
@@ -124,10 +115,6 @@ const FontLabel = styled.label`
   font-size: 0.85rem;
   font-weight: 600;
   color: #444;
-
-  @media (prefers-color-scheme: dark) {
-    color: #ccc;
-  }
 `
 
 const FontSelect = styled.select`
@@ -155,10 +142,6 @@ const InputLabel = styled.label`
   font-size: 0.85rem;
   font-weight: 600;
   color: #444;
-
-  @media (prefers-color-scheme: dark) {
-    color: #ccc;
-  }
 `
 
 const Input = styled.input`
@@ -177,10 +160,6 @@ const CheckboxRow = styled.label`
   flex: 1 1 160px;
   font-size: 0.95rem;
   color: #333;
-
-  @media (prefers-color-scheme: dark) {
-    color: #ccc;
-  }
 `
 
 const Checkbox = styled.input`
