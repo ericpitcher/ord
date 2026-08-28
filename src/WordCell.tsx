@@ -5,6 +5,7 @@ const MAX_FONT_SIZE = 72
 const MIN_FONT_SIZE = 8
 
 const CellBox = styled.div`
+  position: relative;
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
@@ -22,7 +23,41 @@ const Word = styled.span`
   font-weight: 600;
 `
 
-export function WordCell({ word, font }: { word: string; font: string }) {
+const FirstLetterBadge = styled.div`
+  position: absolute;
+  top: 0px;
+  left: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  line-height: 1;
+  color: #000;
+  pointer-events: none;
+`
+
+const UpperLetter = styled.span`
+  font-size: 1.6rem;
+  font-weight: 700;
+`
+
+const LowerLetter = styled.span`
+  font-size: 1.25rem;
+  font-weight: 500;
+`
+
+function firstLetterOf(word: string): string | null {
+  return word.match(/\p{L}/u)?.[0] ?? null
+}
+
+export function WordCell({
+  word,
+  font,
+  showFirstLetter,
+}: {
+  word: string
+  font: string
+  showFirstLetter: boolean
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)
 
@@ -61,8 +96,16 @@ export function WordCell({ word, font }: { word: string; font: string }) {
     return () => observer.disconnect()
   }, [word, font])
 
+  const firstLetter = firstLetterOf(word)
+
   return (
     <CellBox ref={containerRef}>
+      {showFirstLetter && firstLetter && (
+        <FirstLetterBadge>
+          <UpperLetter>{firstLetter.toUpperCase()}</UpperLetter>
+          <LowerLetter>{firstLetter.toLowerCase()}</LowerLetter>
+        </FirstLetterBadge>
+      )}
       {word && <Word ref={textRef}>{word}</Word>}
     </CellBox>
   )

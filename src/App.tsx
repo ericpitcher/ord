@@ -25,6 +25,7 @@ const FONT_OPTIONS = [
   'Andika',
   'Lexend',
   'Atkinson Hyperlegible',
+  'Comic Neue',
   'Crimson Pro',
   'Merriweather',
   'Lora',
@@ -285,6 +286,7 @@ function App() {
   const [showSentence, setShowSentence] = useState(true)
   const [casing, setCasing] = useState<CaseMode>('as-entered')
   const [includePunctuation, setIncludePunctuation] = useState(true)
+  const [showFirstLetter, setShowFirstLetter] = useState(false)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const pdfSheetRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -312,7 +314,12 @@ function App() {
       <>
         <Grid>
           {cellWords.map((word, cellIndex) => (
-            <WordCell key={cellIndex} word={applyCase(word, casing)} font={font} />
+            <WordCell
+              key={cellIndex}
+              word={applyCase(word, casing)}
+              font={font}
+              showFirstLetter={showFirstLetter}
+            />
           ))}
         </Grid>
         {showSentence && footerTokens.length > 0 && (
@@ -409,6 +416,16 @@ function App() {
               onChange={(event) => setIncludePunctuation(event.target.checked)}
             />
             Inkludera skiljetecken
+          </CheckboxRow>
+        </SettingsRow>
+        <SettingsRow>
+          <CheckboxRow>
+            <Checkbox
+              type="checkbox"
+              checked={showFirstLetter}
+              onChange={(event) => setShowFirstLetter(event.target.checked)}
+            />
+            Första bokstaven
           </CheckboxRow>
         </SettingsRow>
       </SettingsFieldset>
