@@ -243,12 +243,12 @@ const PdfSheet = styled(Sheet)`
   padding: 30px;
 `
 
-function chunk(words: string[], size: number): string[][] {
-  const pages: string[][] = []
-  for (let i = 0; i < words.length; i += size) {
-    pages.push(words.slice(i, i + size))
+function chunk<T>(items: T[], size: number): T[][] {
+  const groups: T[][] = []
+  for (let i = 0; i < items.length; i += size) {
+    groups.push(items.slice(i, i + size))
   }
-  return pages
+  return groups
 }
 
 function App() {
@@ -256,23 +256,40 @@ function App() {
   const [font, setFont] = useState<string>(DEFAULT_FONT)
   const [showSentence, setShowSentence] = useState(true)
   const [casing, setCasing] = useState<CaseMode>('as-entered')
+  const [includePunctuation, setIncludePunctuation] = useState(true)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const pdfSheetRefs = useRef<(HTMLDivElement | null)[]>([])
-  const words = tokenize(text)
-  const pages = chunk(words, WORDS_PER_PAGE)
-  if (pages.length === 0) pages.push([])
 
-  function renderPageContent(page: string[]) {
+  const allTokens = tokenize(text)
+  const cellTokens = allTokens
+    .map((token, originalIndex) => ({ token, originalIndex }))
+    .filter(({ token }) => includePunctuation || isWordToken(token))
+  const cellPages = chunk(cellTokens, WORDS_PER_PAGE)
+  if (cellPages.length === 0) cellPages.push([])
+
+  const pageFooterTokens = cellPages.reduce<{ footers: string[][]; cursor: number }>(
+    (acc, _page, pageIndex) => {
+      const isLastPage = pageIndex === cellPages.length - 1
+      const end = isLastPage
+        ? allTokens.length - 1
+        : cellPages[pageIndex + 1][0].originalIndex - 1
+      const footerTokens = allTokens.slice(acc.cursor, end + 1)
+      return { footers: [...acc.footers, footerTokens], cursor: end + 1 }
+    },
+    { footers: [], cursor: 0 },
+  ).footers
+
+  function renderPageContent(cellWords: string[], footerTokens: string[]) {
     return (
       <>
         <Grid>
-          {page.map((word, cellIndex) => (
+          {cellWords.map((word, cellIndex) => (
             <WordCell key={cellIndex} word={applyCase(word, casing)} font={font} />
           ))}
         </Grid>
-        {showSentence && page.length > 0 && (
+        {showSentence && footerTokens.length > 0 && (
           <SentenceFooter>
-            {joinTokens(page.map((word) => applyCase(word, casing)))}
+            {joinTokens(footerTokens.map((word) => applyCase(word, casing)))}
           </SentenceFooter>
         )}
       </>
@@ -280,7 +297,7 @@ function App() {
   }
 
   async function handleCreatePdf() {
-    if (words.length === 0 || isGeneratingPdf) return
+    if (allTokens.length === 0 || isGeneratingPdf) return
 
     setIsGeneratingPdf(true)
     try {
@@ -363,27 +380,43 @@ function App() {
         />
         Skriv ut meningen längst ner
       </CheckboxRow>
+      <CheckboxRow>
+        <Checkbox
+          type="checkbox"
+          checked={includePunctuation}
+          onChange={(event) => setIncludePunctuation(event.target.checked)}
+        />
+        Inkludera skiljetecken
+      </CheckboxRow>
       <PdfButton
         type="button"
         onClick={handleCreatePdf}
-        disabled={words.length === 0 || isGeneratingPdf}
+        disabled={allTokens.length === 0 || isGeneratingPdf}
       >
         {isGeneratingPdf ? 'Skapar PDF…' : 'Skapa PDF'}
       </PdfButton>
       <Pages>
-        {pages.map((page, pageIndex) => (
-          <Sheet key={pageIndex}>{renderPageContent(page)}</Sheet>
+        {cellPages.map((page, pageIndex) => (
+          <Sheet key={pageIndex}>
+            {renderPageContent(
+              page.map(({ token }) => token),
+              pageFooterTokens[pageIndex],
+            )}
+          </Sheet>
         ))}
       </Pages>
       <PdfCaptureLayer aria-hidden="true">
-        {pages.map((page, pageIndex) => (
+        {cellPages.map((page, pageIndex) => (
           <PdfSheet
             key={pageIndex}
             ref={(el) => {
               pdfSheetRefs.current[pageIndex] = el
             }}
           >
-            {renderPageContent(page)}
+            {renderPageContent(
+              page.map(({ token }) => token),
+              pageFooterTokens[pageIndex],
+            )}
           </PdfSheet>
         ))}
       </PdfCaptureLayer>
