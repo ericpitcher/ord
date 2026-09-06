@@ -14,6 +14,21 @@ function isWordToken(token: string): boolean {
   return /^[\p{L}\p{N}'’-]+$/u.test(token)
 }
 
+function hashSeed(numbers: number[]): number {
+  return numbers.reduce((acc, n) => (acc * 31 + n + 1) >>> 0, 7)
+}
+
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  const result = [...items]
+  let state = seed || 1
+  for (let i = result.length - 1; i > 0; i--) {
+    state = (state * 1664525 + 1013904223) >>> 0
+    const j = state % (i + 1)
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 function joinTokens(tokens: string[]): string {
   return tokens.reduce((sentence, token) => {
     if (!sentence) return token
@@ -266,6 +281,8 @@ function App() {
   const [casing, setCasing] = useState<CaseMode>('as-entered')
   const [includePunctuation, setIncludePunctuation] = useState(true)
   const [showFirstLetter, setShowFirstLetter] = useState(false)
+  const [randomizeWords, setRandomizeWords] = useState(false)
+  const [shuffleSeed, setShuffleSeed] = useState(0)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const pdfSheetRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -287,6 +304,13 @@ function App() {
     },
     { footers: [], cursor: 0 },
   ).footers
+
+  function getCellWords(page: typeof cellTokens): string[] {
+    const words = page.map(({ token }) => token)
+    if (!randomizeWords) return words
+    const seed = hashSeed([shuffleSeed, ...page.map(({ originalIndex }) => originalIndex)])
+    return seededShuffle(words, seed)
+  }
 
   function renderPageContent(cellWords: string[], footerTokens: string[]) {
     return (
@@ -406,6 +430,18 @@ function App() {
             />
             Första bokstaven
           </CheckboxRow>
+          <CheckboxRow>
+            <Checkbox
+              type="checkbox"
+              checked={randomizeWords}
+              onChange={(event) => {
+                const checked = event.target.checked
+                setRandomizeWords(checked)
+                if (checked) setShuffleSeed(Math.floor(Math.random() * 2 ** 31))
+              }}
+            />
+            Slumpa orden
+          </CheckboxRow>
         </SettingsRow>
       </SettingsFieldset>
       <InputField>
@@ -430,7 +466,7 @@ function App() {
         {cellPages.map((page, pageIndex) => (
           <Sheet key={pageIndex}>
             {renderPageContent(
-              page.map(({ token }) => token),
+              getCellWords(page),
               pageFooterTokens[pageIndex],
             )}
           </Sheet>
@@ -445,7 +481,7 @@ function App() {
             }}
           >
             {renderPageContent(
-              page.map(({ token }) => token),
+              getCellWords(page),
               pageFooterTokens[pageIndex],
             )}
           </PdfSheet>
