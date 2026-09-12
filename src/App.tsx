@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { WordCell } from './WordCell'
+import { applyCase, CASE_OPTIONS, type CaseMode } from './caseMode'
 
 const COLUMNS = 3
 const ROWS = 7
@@ -47,28 +48,6 @@ const FONT_OPTIONS = [
 ] as const
 
 const DEFAULT_FONT: (typeof FONT_OPTIONS)[number] = 'Andika'
-
-type CaseMode = 'as-entered' | 'uppercase' | 'lowercase' | 'capitalize'
-
-const CASE_OPTIONS: { value: CaseMode; label: string }[] = [
-  { value: 'as-entered', label: 'Som skrivet' },
-  { value: 'uppercase', label: 'VERSALER' },
-  { value: 'lowercase', label: 'gemener' },
-  { value: 'capitalize', label: 'Stor bokstav' },
-]
-
-function applyCase(word: string, mode: CaseMode): string {
-  switch (mode) {
-    case 'uppercase':
-      return word.toUpperCase()
-    case 'lowercase':
-      return word.toLowerCase()
-    case 'capitalize':
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    default:
-      return word
-  }
-}
 
 const Layout = styled.main<{ $font: string }>`
   display: flex;
@@ -319,7 +298,8 @@ function App() {
           {cellWords.map((word, cellIndex) => (
             <WordCell
               key={cellIndex}
-              word={applyCase(word, casing)}
+              word={word}
+              casing={casing}
               font={font}
               showFirstLetter={showFirstLetter}
             />
