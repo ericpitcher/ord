@@ -10,15 +10,13 @@ const CellBox = styled.div`
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   padding: 14px;
   border: 2px solid #000;
 `
 
 const StackedBox = styled(CellBox)`
+  display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 8px;
@@ -27,6 +25,15 @@ const StackedBox = styled(CellBox)`
 const StackedRowBox = styled.div`
   flex: 1 1 0;
   width: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+`
+
+const FitBox = styled.div`
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
   box-sizing: border-box;
@@ -110,25 +117,25 @@ function useFitFontSize(
   }, [text, font])
 }
 
-function FittedWord({
-  containerRef,
-  text,
-  font,
-}: {
-  containerRef: RefObject<HTMLDivElement | null>
-  text: string
-  font: string
-}) {
+// Owns both refs itself so the fit-to-container effect always sees an
+// already-attached container on mount, even under StrictMode's dev-only
+// double-invoke of effects/refs.
+function FittedText({ text, font }: { text: string; font: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)
   useFitFontSize(containerRef, textRef, text, font)
-  return text ? <Word ref={textRef}>{text}</Word> : null
+
+  return (
+    <FitBox ref={containerRef}>
+      {text && <Word ref={textRef}>{text}</Word>}
+    </FitBox>
+  )
 }
 
 function StackedRow({ text, font }: { text: string; font: string }) {
-  const containerRef = useRef<HTMLDivElement>(null)
   return (
-    <StackedRowBox ref={containerRef}>
-      <FittedWord containerRef={containerRef} text={text} font={font} />
+    <StackedRowBox>
+      <FittedText text={text} font={font} />
     </StackedRowBox>
   )
 }
@@ -144,7 +151,6 @@ export function WordCell({
   font: string
   showFirstLetter: boolean
 }) {
-  const containerRef = useRef<HTMLDivElement>(null)
   const firstLetter = firstLetterOf(word)
   const firstLetterBadge = showFirstLetter && firstLetter && (
     <FirstLetterBadge>
@@ -155,7 +161,7 @@ export function WordCell({
 
   if (casing === 'all-three') {
     return (
-      <StackedBox ref={containerRef}>
+      <StackedBox>
         {firstLetterBadge}
         <StackedRow text={applyCase(word, 'lowercase')} font={font} />
         <StackedRow text={applyCase(word, 'uppercase')} font={font} />
@@ -164,11 +170,10 @@ export function WordCell({
     )
   }
 
-  const displayWord = applyCase(word, casing)
   return (
-    <CellBox ref={containerRef}>
+    <CellBox>
       {firstLetterBadge}
-      <FittedWord containerRef={containerRef} text={displayWord} font={font} />
+      <FittedText text={applyCase(word, casing)} font={font} />
     </CellBox>
   )
 }
