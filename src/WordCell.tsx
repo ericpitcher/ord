@@ -32,7 +32,6 @@ const StackedRowBox = styled.div`
   min-width: 0;
   min-height: 0;
   box-sizing: border-box;
-  overflow: hidden;
 `
 
 const FitBox = styled.div`
@@ -44,7 +43,6 @@ const FitBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 `
 
 const Word = styled.span`
