@@ -4,6 +4,10 @@ import { applyCase, type CaseMode } from './caseMode'
 
 const MAX_FONT_SIZE = 72
 const MIN_FONT_SIZE = 8
+// Leaves a small margin below the exact fit so glyph descenders survive
+// html2canvas's PDF-export text rendering, which measures slightly
+// differently than the browser and can otherwise clip them.
+const FIT_SAFETY_MARGIN_PX = 2
 
 const CellBox = styled.div`
   position: relative;
@@ -92,8 +96,8 @@ function useFitFontSize(
         parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
       const paddingY =
         parseFloat(style.paddingTop) + parseFloat(style.paddingBottom)
-      const availableWidth = container.clientWidth - paddingX
-      const availableHeight = container.clientHeight - paddingY
+      const availableWidth = container.clientWidth - paddingX - FIT_SAFETY_MARGIN_PX
+      const availableHeight = container.clientHeight - paddingY - FIT_SAFETY_MARGIN_PX
 
       let size = Math.min(MAX_FONT_SIZE, Math.min(availableWidth, availableHeight))
       textEl.style.fontSize = `${size}px`

@@ -1,5 +1,7 @@
 # ord
 
+App for learning to read, shows the typed sentence as words in large cells for readablity and the sentence to read below the cells.
+
 React + TypeScript app built with Vite and styled-components, deployed to GitHub Pages at https://ericpitcher.github.io/ord/
 
 ## Development
